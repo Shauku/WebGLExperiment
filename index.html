@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ilerna</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/fonts.css" rel="stylesheet">
+    <link href="stylesheets/global.css" rel="stylesheet">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+      //#ifdef GL_ES
+      precision highp float;
+      //#endif
+      // Texture we want to use.
+      uniform sampler2D tex0;
+      uniform sampler2D tex1;
+      // System absolute milliseconds passed from JavaScript.
+      uniform float time;
+      // Screen size in pixels.
+      uniform vec2 resolution;
+      // Absolute mouse position.
+      uniform vec2 mouse;
+      // Entry point for all shaders.
+      void main(void)
+      {
+        // Flip the y-coordinate, as WebGL thinks the origin is at bottom left corner.
+        vec2 coord = vec2(gl_FragCoord.x,gl_FragCoord.y);
+        // Vector from mouse position to this pixel.
+        //vec2 delta = vec2(coord.x-mouse.x,coord.y-mouse.y);
+        vec2 delta = vec2(coord.x,coord.y);
+        // Save distance from mouse position.
+        float distance = length(delta);
+        // Normalized delta.
+        vec2 deltaNormal = delta/distance;
+        vec2 parallax = mouse*0.005;
+        // WebGL considers the texture to be from (0,0) to (1,1), so we need to calculate
+        // this coordinate from the pixel coordinates we have.
+        vec2 uv = coord.xy/resolution.xy;
+        float depthMap = texture2D(tex0,uv).r;
+        // Distort the texture coordinate to create a ripple effect.
+        //uv += sin(coord.y*.025-time*5.0*depthMap)*.005;
+        // Retrieve the texture pixel at the right location.
+        vec3 col = texture2D(tex1,uv+parallax*depthMap).xyz;
+        // Apply some lighting effects depending on the distance from mouse; this
+        // simply multiplies all components of the colors, making ones closer brighter,
+        // and the ones further away darker. The circle that stays unmodified is of radius 50px.
+        //col *= 100.0/distance;
+        // Return the color in the result variable gl_FragColor.
+        gl_FragColor = vec4(col,1.0);
+      }
+    </script>
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+      // Position on the surface of the model.
+      attribute vec4 position;
+      // Entry point for shader is always the method main.
+      // It does not return anything, nor does it take arguments.
+      void main(void) {
+        // Assigning a value to gl_Position is this the vertex shader's way of returning a value.
+        gl_Position = position;
+      }
+    </script>
+
+  </head>
+  <body onload="start()">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-6 img">
+          <canvas id="glcanvas" width="990" height="1080">
+          </canvas>
+        </div>
+        <div class="col-xs-6 contingut">
+          <header>
+            <img src="images/image001.png">
+            <h2>cuidados auxiliares de enfermería a distancia</h2>
+            <h1 class="smallh1">aprende sin límites</h1>
+            <h1 class="bigh1">aprende <br/>sin límites</h1>
+          </header>
+          <main>
+            <p>Estudia online el ciclo de Auxiliar de Enfermería y obtén la titulación 100% oficial a través de nuestros exámenes, sin pasar por pruebas libres. Examínate en la capital de tu provincia y matricúlate sólo de las asignaturas que quieras. ¡Tú marcas el ritmo!</p>
+            <form id="contact" action="">
+              <span class="input input--hoshi">
+                <input id="Nombre" name="Nombre" class="input__field input__field--hoshi" type="text"/>
+                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-4">
+                  <span class="input__label-content input__label-content--hoshi">Nombre y apellidos</span>
+                </label>
+                <i id="errorName" class="fa fa-exclamation-triangle hidde" aria-hidden="true"></i>
+              </span>
+              <span class="input input--hoshi">
+                <input id="Email" name="Email" class="input__field input__field--hoshi" type="text"/>
+                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-4">
+                  <span class="input__label-content input__label-content--hoshi">E-mail</span>
+                  <i id="errorEmail" class="fa fa-exclamation-triangle hidde" aria-hidden="true"></i>
+                </label>
+              </span>
+              <span class="input input--hoshi">
+                <input id="Phone" name="Telefono" class="input__field input__field--hoshi" type="text"/>
+                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-4">
+                  <span class="input__label-content input__label-content--hoshi">Teléfono</span>
+                  <i id="errorPhone" class="fa fa-exclamation-triangle hidde" aria-hidden="true"></i>
+                </label>
+              </span>
+              <span class="input input--hoshi">
+                <input id="CP" name="CP" class="input__field input__field--hoshi" type="text"/>
+                <label class="input__label input__label--hoshi input__label--hoshi-color-1" for="input-4">
+                  <span class="input__label-content input__label-content--hoshi">Código postal</span>
+                  <i id="errorCode" class="fa fa-exclamation-triangle hidde" aria-hidden="true"></i>
+                </label>
+              </span>
+              <input id="enviar" type="submit" name="submit" value="Empieza ahora tu formación">
+              <!--<input type="text" name="fullname" placeholder="Nombre y apellidos"><br/>
+              <input type="text" name="email" placeholder="E-mail"><br/>
+              <input type="text" name="phone" placeholder="Teléfon"><br/>
+              <input type="text" name="codepost" placeholder="Código Postal"><br/>
+              -->
+            </form>
+          </main>
+          <footer>
+            <span class="contact frontend">O si lo prefieres, llámanos al <span class="num">900 730 222.</span><br/>La llamada es gratuita ;)</span><br/>
+            <span class="contact starthidden">O si lo prefieres, llámanos al <span class="num">900 730 222.</span>   La llamada es gratuita ;)</span><br/>
+            <div class="authorize center-vertical">
+              <span>Centro autorizado y homologado</span>
+              <img src="images/ministerio_footer.png" class="footer">
+              <img src="images/gene_cabecera.png" class="footer">
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+    <script src="js/classie.js"></script>
+    <script>
+      (function() {
+        // trim polyfill : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim
+        if (!String.prototype.trim) {
+          (function() {
+            // Make sure we trim BOM and NBSP
+            var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+            String.prototype.trim = function() {
+              return this.replace(rtrim, '');
+            };
+          })();
+        }
+
+        [].slice.call( document.querySelectorAll( 'input.input__field' ) ).forEach( function( inputEl ) {
+          // in case the input is already filled..
+          if( inputEl.value.trim() !== '' ) {
+            classie.add( inputEl.parentNode, 'input--filled' );
+          }
+
+          // events:
+          inputEl.addEventListener( 'focus', onInputFocus );
+          inputEl.addEventListener( 'blur', onInputBlur );
+        } );
+
+        function onInputFocus( ev ) {
+          classie.add( ev.target.parentNode, 'input--filled' );
+        }
+
+        function onInputBlur( ev ) {
+          if( ev.target.value.trim() === '' ) {
+            classie.remove( ev.target.parentNode, 'input--filled' );
+          }
+        }
+      })();
+    </script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/gl.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+</html>
